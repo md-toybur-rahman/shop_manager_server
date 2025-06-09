@@ -1,0 +1,60 @@
+[
+    {
+        "name": "Robiul Hasan",
+        "email": "robiul@gmail.com",
+        "hour_rate": 18,
+        "total_income": 0,
+        "total_working_hour": "0-0",
+        "current_working_month": "June",
+        "current_month_details": [
+            {
+                "date": "01-06-25",
+                "enter1": "0-0",
+                "exit1": "0-0",
+                "enter2": "0-0",
+                "exit2": "0-0",
+                "total_hour": "0-0",
+                "total_income": 0,
+                "cash_received": 0
+            }
+        ],
+        "income_history": [
+            {
+                "month_name": "May",
+                "total_income": 0,
+                "paid_ammount": 0,
+                "paid_date": 0,
+                "payment_status": "Payed"
+            }
+        ]
+    },
+    {
+        "name": "Parvez Mosharaf",
+        "email": "parbez@gmail.com",
+        "hour_rate": 18,
+        "total_income": 0,
+        "total_working_hour": "0-0",
+        "current_working_month": "June",
+        "current_month_details": [
+            {
+                "date": "01-06-25",
+                "enter1": "0-0",
+                "exit1": "0-0",
+                "enter2": "0-0",
+                "exit2": "0-0",
+                "total_hour": "0-0",
+                "total_income": 0,
+                "cash_received": 0
+            }
+        ],
+        "income_history": [
+            {
+                "month_name": "May",
+                "total_income": 0,
+                "paid_ammount": 0,
+                "paid_date": 0,
+                "payment_status": "Payed"
+            }
+        ]
+    }
+]
