@@ -38,6 +38,12 @@ async function run() {
             const staffs = await staffsCollection.find().toArray();
             res.send(staffs);
         })
+        app.get("/staff/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const staff = await staffsCollection.find(query).toArray();
+            res.send(staff);
+        })
 
         app.get('/get_network_ip', (req, res) => {
             const interfaces = os.networkInterfaces();
@@ -60,9 +66,6 @@ async function run() {
             const filter = { _id: new ObjectId(id) };
             const options = { upsert: true };
             const updatedIP = req.body;
-
-            console.log(updatedIP);
-
             const wifiIP = {
                 $set: {
                     wifi_ip: updatedIP.wifi_ip
@@ -71,6 +74,48 @@ async function run() {
 
             try {
                 const result = await wifiIpCollection.updateOne(filter, wifiIP, options);
+                res.send(result);
+            } catch (err) {
+                res.status(500).send({ error: 'Update failed', details: err });
+            }
+        });
+        app.put('/staffs_daily_time/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedTime = req.body;
+            let attendance
+            if (updatedTime.name == 'today_enter1_time') {
+                attendance = {
+                    $set: {
+                        today_enter1_time: updatedTime.clickedTime
+                    }
+                };
+            }
+            else if (updatedTime.name == 'today_exit1_time') {
+                attendance = {
+                    $set: {
+                        today_exit1_time: updatedTime.clickedTime
+                    }
+                };
+            }
+            else if (updatedTime.name == 'today_enter2_time') {
+                attendance = {
+                    $set: {
+                        today_enter2_time: updatedTime.clickedTime
+                    }
+                };
+            }
+            else if (updatedTime.name == 'today_exit2_time') {
+                attendance = {
+                    $set: {
+                        today_exit2_time: updatedTime.clickedTime
+                    }
+                };
+            }
+
+            try {
+                const result = await staffsCollection.updateOne(filter, attendance, options);
                 res.send(result);
             } catch (err) {
                 res.status(500).send({ error: 'Update failed', details: err });
