@@ -32,6 +32,7 @@ async function run() {
 
         const staffsCollection = client.db('Bismillah_Enterprise').collection('staffs');
         const wifiIpCollection = client.db('Bismillah_Enterprise').collection('wifi_ip');
+        const userRequestCollection = client.db('Bismillah_Enterprise').collection('user_request');
 
 
 
@@ -43,7 +44,12 @@ async function run() {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const staff = await staffsCollection.find(query).toArray();
-            res.send(staff);
+            if(staff) {
+                res.send(staff);
+            }
+            else{
+                res.send({message: 'You Are Waiting For Admin Approval'})
+            }
         })
 
         app.get('/get_network_ip', (req, res) => {
@@ -60,6 +66,27 @@ async function run() {
 
             res.json({ ip: localIp || 'Not found' });
         });
+
+        app.post('/user_request', async (req, res) => {
+            const user = req.body;
+            const result = await userRequestCollection.insertOne(user);
+            res.send(result);
+        })
+        app.get('/user_request', async(req, res) => {
+            const result = userRequestCollection.find().toArray();
+            res.send(result);
+        })
+        app.delete('/user_request/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = {_id: new ObjectId(id)};
+            const result = await userRequestCollection.deleteOne(filter);
+            res.send(result);
+        })
+        app.post('/new_staff', async (req,res) => {
+            const new_staff = req.body;
+            const result = staffsCollection.insertOne(new_staff);
+            res.send(result);
+        })
 
 
         app.put('/set_ip/:id', async (req, res) => {
