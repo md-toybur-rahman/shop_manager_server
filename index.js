@@ -44,14 +44,19 @@ async function run() {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const staff = await staffsCollection.find(query).toArray();
-            if(staff) {
+            if (staff) {
                 res.send(staff);
             }
-            else{
-                res.send({message: 'You Are Waiting For Admin Approval'})
+            else {
+                res.send({ message: 'You Are Waiting For Admin Approval' })
             }
         })
-
+        app.get("/staff/:name", async (req, res) => {
+            const name = req.params.name;
+            const query = { display_name: name };
+            const staff = await staffsCollection.find(query).toArray();
+            res.send(staff);
+        })
         app.get('/get_network_ip', (req, res) => {
             const interfaces = os.networkInterfaces();
             let localIp = null;
@@ -72,17 +77,23 @@ async function run() {
             const result = await userRequestCollection.insertOne(user);
             res.send(result);
         })
-        app.get('/user_request', async(req, res) => {
+        app.get('/user_request', async (req, res) => {
             const result = userRequestCollection.find().toArray();
             res.send(result);
         })
+        app.get('/user_request/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const user = await userRequestCollection.findOne(query);
+            res.send(user); // returns null if not found
+        })
         app.delete('/user_request/:id', async (req, res) => {
             const id = req.params.id;
-            const filter = {_id: new ObjectId(id)};
+            const filter = { _id: new ObjectId(id) };
             const result = await userRequestCollection.deleteOne(filter);
             res.send(result);
         })
-        app.post('/new_staff', async (req,res) => {
+        app.post('/new_staff', async (req, res) => {
             const new_staff = req.body;
             const result = staffsCollection.insertOne(new_staff);
             res.send(result);
@@ -244,7 +255,7 @@ async function run() {
             }
             console.log('✅ All staff times reset and saved at 12:00 AM');
         });
-// ------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------
 
         cron.schedule('0 0 * * *', async () => {
             console.log('⏰ Resetting time fields at 12:00 AM');
