@@ -51,12 +51,15 @@ async function run() {
                 res.send({ message: 'You Are Waiting For Admin Approval' })
             }
         })
-        app.get("/staff/:name", async (req, res) => {
+        app.get('/staff_name/:name', async (req, res) => {
             const name = req.params.name;
-            const query = { display_name: name };
-            const staff = await staffsCollection.find(query).toArray();
-            res.send(staff);
-        })
+            try {
+                const result = await staffsCollection.findOne({ display_name: name });
+                res.send(result);
+            } catch (err) {
+                res.status(500).send({ error: "Failed to query staffs by name" });
+            }
+        });
         app.get('/get_network_ip', (req, res) => {
             const interfaces = os.networkInterfaces();
             let localIp = null;
@@ -74,18 +77,25 @@ async function run() {
 
         app.post('/user_request', async (req, res) => {
             const user = req.body;
-            const result = await userRequestCollection.insertOne(user);
-            res.send(result);
-        })
+            try {
+                const result = await userRequestCollection.insertOne(user);
+                res.send(result);
+            } catch (err) {
+                res.status(500).send({ error: "Failed to insert user request" });
+            }
+        });
+        app.get('/user_request_name/:name', async (req, res) => {
+            const name = req.params.name;
+            try {
+                const result = await userRequestCollection.findOne({ name });
+                res.send(result);
+            } catch (err) {
+                res.status(500).send({ error: "Failed to query user_request by name" });
+            }
+        });
         app.get('/user_request', async (req, res) => {
-            const result = userRequestCollection.find().toArray();
-            res.send(result);
-        })
-        app.get('/user_request/:email', async (req, res) => {
-            const email = req.params.email;
-            const query = { email };
-            const user = await userRequestCollection.findOne(query);
-            res.send(user); // returns null if not found
+            const user = await userRequestCollection.find().toArray();
+            res.send(user);
         })
         app.delete('/user_request/:id', async (req, res) => {
             const id = req.params.id;
