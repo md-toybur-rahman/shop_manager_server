@@ -12,7 +12,7 @@ app.use(express.json());
 
 
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@bismillahenterpriseclus.eoxgyuj.mongodb.net/?retryWrites=true&w=majority&appName=BismillahEnterpriseCluster`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@bookshelfcluster.p3s31ub.mongodb.net/?retryWrites=true&w=majority&appName=bookshelfCluster`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -33,13 +33,36 @@ async function run() {
         const staffsCollection = client.db('Bismillah_Enterprise').collection('staffs');
         const wifiIpCollection = client.db('Bismillah_Enterprise').collection('wifi_ip');
         const userRequestCollection = client.db('Bismillah_Enterprise').collection('user_request');
+        const shopCodeCollection = client.db('Bismillah_Enterprise').collection('shop_code');
 
+        app.get("/shop_code/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const shopCode = await shopCodeCollection.find(query).toArray();
+            res.send(shopCode);
+        })
+        app.put('/shop_code/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedCode = req.body;
+            const shopCode = {
+                $set: {
+                    shop_code: updatedCode.shop_code
+                }
+            };
 
-
+            try {
+                const result = await shopCodeCollection.updateOne(filter, shopCode, options);
+                res.send(result);
+            } catch (err) {
+                res.status(500).send({ error: 'Update failed', details: err });
+            }
+        });
         app.get("/staffs", async (req, res) => {
             const staffs = await staffsCollection.find().toArray();
             res.send(staffs);
-        })
+        });
         app.get("/staff/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
@@ -50,16 +73,22 @@ async function run() {
             else {
                 res.send({ message: 'You Are Waiting For Admin Approval' })
             }
-        })
-        app.get('/staff_name/:name', async (req, res) => {
-            const name = req.params.name;
+        });
+        app.get('/staff/uid_query/:uid', async (req, res) => {
+            const uid = req.params.uid;
             try {
-                const result = await staffsCollection.findOne({ display_name: name });
-                res.send(result);
+                const result = await staffsCollection.findOne({ uid: uid });
+                if (result) {
+                    res.send(result);
+                }
+                else {
+                    res.send({ message: "UID not find" })
+                }
             } catch (err) {
                 res.status(500).send({ error: "Failed to query staffs by name" });
             }
         });
+
         app.get('/get_network_ip', (req, res) => {
             const interfaces = os.networkInterfaces();
             let localIp = null;
@@ -74,7 +103,21 @@ async function run() {
 
             res.json({ ip: localIp || 'Not found' });
         });
+        app.get('/user_request_uid/:uid', async (req, res) => {
+            const uid = req.params.uid;
 
+            try {
+                const userRequest = await userRequestCollection.findOne({ uid });
+                if (userRequest) {
+                    res.send(userRequest);
+                } else {
+                    // ✅ Send null or empty object, NOT nothing
+                    res.status(200).send(null);
+                }
+            } catch (err) {
+                res.status(500).send({ error: 'Server error checking user request' });
+            }
+        });
         app.post('/user_request', async (req, res) => {
             const user = req.body;
             try {
@@ -84,15 +127,7 @@ async function run() {
                 res.status(500).send({ error: "Failed to insert user request" });
             }
         });
-        app.get('/user_request_name/:name', async (req, res) => {
-            const name = req.params.name;
-            try {
-                const result = await userRequestCollection.findOne({ name });
-                res.send(result);
-            } catch (err) {
-                res.status(500).send({ error: "Failed to query user_request by name" });
-            }
-        });
+
         app.get('/user_request', async (req, res) => {
             const user = await userRequestCollection.find().toArray();
             res.send(user);
