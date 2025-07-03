@@ -81,7 +81,7 @@ async function run() {
                     res.send(result);
                 }
                 else {
-                    res.send({ message: "UID not find" })
+                    res.send({ message: "UID not found" })
                 }
             } catch (err) {
                 res.status(500).send({ error: "Failed to query staffs by name" });
@@ -121,7 +121,7 @@ async function run() {
                     res.send(userRequest);
                 } else {
                     // ✅ Send null or empty object, NOT nothing
-                    res.status(200).send(null);
+                    res.send({message: 'UID not found'})
                 }
             } catch (err) {
                 res.status(500).send({ error: 'Server error checking user request' });
