@@ -29,7 +29,6 @@ async function run() {
         await client.connect();
         // Send a ping to confirm a successful connection
 
-
         const staffsCollection = client.db('Bismillah_Enterprise').collection('staffs');
         const wifiIpCollection = client.db('Bismillah_Enterprise').collection('wifi_ip');
         const userRequestCollection = client.db('Bismillah_Enterprise').collection('user_request');
@@ -88,6 +87,16 @@ async function run() {
                 res.status(500).send({ error: "Failed to query staffs by name" });
             }
         });
+
+        app.post('/staff', async (req, res) => {
+            const newStaff = req.body;
+            try {
+                const result = await staffsCollection.insertOne(newStaff);
+                res.send(result);
+            } catch (err) {
+                res.status(500).send({ error: "Failed to insert user request" });
+            }
+        })
 
         app.get('/get_network_ip', (req, res) => {
             const interfaces = os.networkInterfaces();
