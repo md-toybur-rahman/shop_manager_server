@@ -30,7 +30,7 @@ async function run() {
         // Send a ping to confirm a successful connection
 
         const staffsCollection = client.db('Bismillah_Enterprise').collection('staffs');
-        const wifiIpCollection = client.db('Bismillah_Enterprise').collection('wifi_ip');
+        const shopLocationCollection = client.db('Bismillah_Enterprise').collection('shop_location');
         const userRequestCollection = client.db('Bismillah_Enterprise').collection('user_request');
         const shopCodeCollection = client.db('Bismillah_Enterprise').collection('shop_code');
 
@@ -98,20 +98,20 @@ async function run() {
             }
         })
 
-        app.get('/get_network_ip', (req, res) => {
-            const interfaces = os.networkInterfaces();
-            let localIp = null;
+        // app.get('/get_network_ip', (req, res) => {
+        //     const interfaces = os.networkInterfaces();
+        //     let localIp = null;
 
-            for (let name in interfaces) {
-                for (let iface of interfaces[name]) {
-                    if (iface.family === 'IPv4' && !iface.internal) {
-                        localIp = iface.address;
-                    }
-                }
-            }
+        //     for (let name in interfaces) {
+        //         for (let iface of interfaces[name]) {
+        //             if (iface.family === 'IPv4' && !iface.internal) {
+        //                 localIp = iface.address;
+        //             }
+        //         }
+        //     }
 
-            res.json({ ip: localIp || 'Not found' });
-        });
+        //     res.json({ ip: localIp || 'Not found' });
+        // });
         app.get('/user_request_uid/:uid', async (req, res) => {
             const uid = req.params.uid;
 
@@ -121,7 +121,7 @@ async function run() {
                     res.send(userRequest);
                 } else {
                     // ✅ Send null or empty object, NOT nothing
-                    res.send({message: 'UID not found'})
+                    res.send({ message: 'UID not found' })
                 }
             } catch (err) {
                 res.status(500).send({ error: 'Server error checking user request' });
@@ -154,24 +154,24 @@ async function run() {
         })
 
 
-        app.put('/set_ip/:id', async (req, res) => {
-            const id = req.params.id;
-            const filter = { _id: new ObjectId(id) };
-            const options = { upsert: true };
-            const updatedIP = req.body;
-            const wifiIP = {
-                $set: {
-                    wifi_ip: updatedIP.wifi_ip
-                }
-            };
+        // app.put('/set_ip/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const filter = { _id: new ObjectId(id) };
+        //     const options = { upsert: true };
+        //     const updatedIP = req.body;
+        //     const wifiIP = {
+        //         $set: {
+        //             wifi_ip: updatedIP.wifi_ip
+        //         }
+        //     };
 
-            try {
-                const result = await wifiIpCollection.updateOne(filter, wifiIP, options);
-                res.send(result);
-            } catch (err) {
-                res.status(500).send({ error: 'Update failed', details: err });
-            }
-        });
+        //     try {
+        //         const result = await wifiIpCollection.updateOne(filter, wifiIP, options);
+        //         res.send(result);
+        //     } catch (err) {
+        //         res.status(500).send({ error: 'Update failed', details: err });
+        //     }
+        // });
         app.put('/staffs_daily_time/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
@@ -333,10 +333,52 @@ async function run() {
             }
         });
 
-        app.get('/set_ip', async (req, res) => {
-            const seted_wifi_ip = await wifiIpCollection.find().toArray();
-            res.send(seted_wifi_ip);
-        })
+        // ✅ GET shop location
+        app.get('/shop_location', async (req, res) => {
+            try {
+                const location = await shopLocationCollection.findOne({});
+                if (!location) {
+                    return res.status(404).json({ message: 'Shop location not found' });
+                }
+                res.json({
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                });
+            } catch (error) {
+                console.error('GET /api/shop-location error:', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+        // ✅ POST update/insert shop location
+        app.post('/shop-location', async (req, res) => {
+            const { latitude, longitude } = req.body;
+
+            if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+                return res.status(400).json({ error: 'Latitude and Longitude must be numbers' });
+            }
+
+            try {
+                const existing = await shopLocationCollection.findOne({});
+                if (existing) {
+                    await shopLocationCollection.updateOne(
+                        { _id: existing._id },
+                        { $set: { latitude, longitude } }
+                    );
+                } else {
+                    await shopLocationCollection.insertOne({ latitude, longitude });
+                }
+                res.json({ message: 'Shop location saved successfully' });
+            } catch (error) {
+                console.error('POST /shop-location error:', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+        // app.get('/set_ip', async (req, res) => {
+        //     const seted_wifi_ip = await wifiIpCollection.find().toArray();
+        //     res.send(seted_wifi_ip);
+        // })
 
 
 
