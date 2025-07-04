@@ -345,13 +345,13 @@ async function run() {
                     longitude: location.longitude,
                 });
             } catch (error) {
-                console.error('GET /api/shop-location error:', error);
+                console.error('GET /shop_location error:', error);
                 res.status(500).json({ error: 'Internal server error' });
             }
         });
 
         // ✅ POST update/insert shop location
-        app.post('/shop-location', async (req, res) => {
+        app.post('/shop_location', async (req, res) => {
             const { latitude, longitude } = req.body;
 
             if (typeof latitude !== 'number' || typeof longitude !== 'number') {
@@ -370,7 +370,7 @@ async function run() {
                 }
                 res.json({ message: 'Shop location saved successfully' });
             } catch (error) {
-                console.error('POST /shop-location error:', error);
+                console.error('POST /shop_location error:', error);
                 res.status(500).json({ error: 'Internal server error' });
             }
         });
