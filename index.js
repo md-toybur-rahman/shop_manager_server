@@ -343,6 +343,7 @@ async function run() {
                 res.json({
                     latitude: location.latitude,
                     longitude: location.longitude,
+                    shop_range: location.shop_range,
                 });
             } catch (error) {
                 console.error('GET /shop_location error:', error);
