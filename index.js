@@ -352,9 +352,9 @@ async function run() {
 
         // ✅ POST update/insert shop location
         app.post('/shop_location', async (req, res) => {
-            const { latitude, longitude } = req.body;
+            const { latitude, longitude, shop_range } = req.body;
 
-            if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+            if (typeof latitude !== 'number' || typeof longitude !== 'number' || typeof shop_range !== 'number') {
                 return res.status(400).json({ error: 'Latitude and Longitude must be numbers' });
             }
 
@@ -363,10 +363,10 @@ async function run() {
                 if (existing) {
                     await shopLocationCollection.updateOne(
                         { _id: existing._id },
-                        { $set: { latitude, longitude } }
+                        { $set: { latitude, longitude, shop_range } }
                     );
                 } else {
-                    await shopLocationCollection.insertOne({ latitude, longitude });
+                    await shopLocationCollection.insertOne({ latitude, longitude, shop_range });
                 }
                 res.json({ message: 'Shop location saved successfully' });
             } catch (error) {
