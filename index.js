@@ -87,6 +87,20 @@ async function run() {
                 res.status(500).send({ error: "Failed to query staffs by name" });
             }
         });
+        app.get('/staffs_monthly_records/:uid', async (req, res) => {
+            const uid = req.params.uid;
+            try {
+                const result = await staffsCollection.findOne({ uid: uid });
+                if (result) {
+                    res.send(result);
+                }
+                else {
+                    res.send({ message: "UID not found" })
+                }
+            } catch (err) {
+                res.status(500).send({ error: "Failed to query staffs by name" });
+            }
+        });
 
         app.post('/staff', async (req, res) => {
             const newStaff = req.body;
