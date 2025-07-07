@@ -387,7 +387,7 @@ async function run() {
                 today_enter2_time: bodyData.today_enter2_time,
                 today_exit2_time: bodyData.today_exit2_time,
                 total_hour: bodyData.total_hour,
-                total_minute: bodyData.total_minutes,
+                total_minute: bodyData.total_minute,
                 total_earn: bodyData.total_earn
                 
             }
