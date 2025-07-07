@@ -378,48 +378,10 @@ async function run() {
 
         app.put('/submit_work_time/:id', async (req, res) => {
             const id = req.params.id;
+            const todaySummary = req.body;
             const filter = { _id: new ObjectId(id) };
 
             try {
-                // Get current staff data
-                const staff = await staffsCollection.findOne(filter);
-                const { today_enter1_time, today_exit1_time, today_enter2_time, today_exit2_time, hour_rate } = staff;
-
-                // Helper: Convert 12-hour time string to minutes
-                const toMinutes = (timeStr) => {
-                    if (!timeStr) return 0;
-                    const [time, modifier] = timeStr.split(' ');
-                    let [hours, minutes] = time.split(':').map(Number);
-                    if (modifier === 'PM' && hours !== 12) hours += 12;
-                    if (modifier === 'AM' && hours === 12) hours = 0;
-                    return hours * 60 + minutes;
-                };
-
-                // Calculate total working minutes
-                const enter1 = toMinutes(today_enter1_time);
-                const exit1 = toMinutes(today_exit1_time);
-                const enter2 = toMinutes(today_enter2_time);
-                const exit2 = toMinutes(today_exit2_time);
-                const totalMinutes = (exit1 - enter1) + (exit2 - enter2);
-                const totalHours = parseFloat((totalMinutes / 60).toFixed(2));
-                const totalEarn = parseFloat((totalHours * parseFloat(hour_rate)).toFixed(2));
-
-                // Prepare attendance object
-                const now = new Date();
-                const day = now.toLocaleDateString('en-BD', { day: 'numeric', month: 'long', year: 'numeric' });
-                const dayName = now.toLocaleDateString('en-BD', { weekday: 'long' });
-
-                const todaySummary = {
-                    date: day,
-                    day_name: dayName,
-                    enter1: today_enter1_time,
-                    exit1: today_exit1_time,
-                    enter2: today_enter2_time,
-                    exit2: today_exit2_time,
-                    total_hour: totalHours,
-                    total_earn: totalEarn
-                };
-
                 // Update database: Push daily data & reset today's values
                 const updateDoc = {
                     $push: { current_month_details: todaySummary },
