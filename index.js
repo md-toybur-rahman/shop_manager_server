@@ -410,12 +410,33 @@ async function run() {
                         today_enter1_time: '',
                         today_exit1_time: '',
                         today_enter2_time: '',
-                        today_exit2_time: ''
+                        today_exit2_time: '',
+                        additional_enter_time: '',
+                        additional_exit_time: '',
+                        additional_movement_hour: 0,
+                        additional_movement_minute: 0
                     }
                 };
-
-                const result = await staffsCollection.updateOne(filter, updateDoc);
-                res.send(result);
+                const ErrorDoc = {
+                    $set: {
+                        today_enter1_time: '',
+                        today_exit1_time: '',
+                        today_enter2_time: '',
+                        today_exit2_time: '',
+                        additional_enter_time: '',
+                        additional_exit_time: '',
+                        additional_movement_hour: 0,
+                        additional_movement_minute: 0
+                    }
+                }
+                if (bodyData.today_exit1_time === '' || bodyData.today_exit2_time === '') {
+                    const result = await staffsCollection.updateOne(filter, ErrorDoc);
+                    res.send(result);
+                }
+                else {
+                    const result = await staffsCollection.updateOne(filter, updateDoc);
+                    res.send(result);
+                }
             } catch (err) {
                 res.status(500).send({ error: 'Update failed', details: err.message });
             }
