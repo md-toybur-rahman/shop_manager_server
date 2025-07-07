@@ -378,7 +378,19 @@ async function run() {
 
         app.put('/submit_work_time/:id', async (req, res) => {
             const id = req.params.id;
-            const todaySummary = req.body;
+            const bodyData = req.body;
+            const todaySummary = {
+                current_date: bodyData.currentDate, 
+                current_day_name: bodyData.currentDayName,
+                today_enter1_time: bodyData.today_enter1_time,
+                today_exit1_time: bodyData.today_exit1_time,
+                today_enter2_time: bodyData.today_enter2_time,
+                today_exit2_time: bodyData.today_exit2_time,
+                total_hour: bodyData.total_hour,
+                total_minute: bodyData.total_minutes,
+                total_earn: bodyData.total_earn
+                
+            }
             const filter = { _id: new ObjectId(id) };
 
             try {
@@ -386,6 +398,9 @@ async function run() {
                 const updateDoc = {
                     $push: { current_month_details: todaySummary },
                     $set: {
+                        total_working_hour: bodyData.total_working_hour,
+                        total_working_minute: bodyData.total_working_minute,
+                        total_income: bodyData.total_income,
                         today_enter1_time: '',
                         today_exit1_time: '',
                         today_enter2_time: '',
