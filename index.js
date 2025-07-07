@@ -97,6 +97,12 @@ async function run() {
                 res.status(500).send({ error: "Failed to insert user request" });
             }
         })
+        app.delete('/staff/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const result = await staffsCollection.deleteOne(filter);
+            res.send(result);
+        })
 
         // app.get('/get_network_ip', (req, res) => {
         //     const interfaces = os.networkInterfaces();
@@ -380,7 +386,7 @@ async function run() {
             const id = req.params.id;
             const bodyData = req.body;
             const todaySummary = {
-                current_date: bodyData.currentDate, 
+                current_date: bodyData.currentDate,
                 current_day_name: bodyData.currentDayName,
                 today_enter1_time: bodyData.today_enter1_time,
                 today_exit1_time: bodyData.today_exit1_time,
@@ -389,7 +395,7 @@ async function run() {
                 total_hour: bodyData.total_hour,
                 total_minute: bodyData.total_minute,
                 total_earn: bodyData.total_earn
-                
+
             }
             const filter = { _id: new ObjectId(id) };
 
