@@ -33,6 +33,7 @@ async function run() {
         const shopLocationCollection = client.db('Bismillah_Enterprise').collection('shop_location');
         const userRequestCollection = client.db('Bismillah_Enterprise').collection('user_request');
         const shopCodeCollection = client.db('Bismillah_Enterprise').collection('shop_code');
+        const additionalMovementRequestCollection = client.db('Bismillah_Enterprise').collection('additional_movement_request');
 
         app.get("/shop_code/:id", async (req, res) => {
             const id = req.params.id;
@@ -53,6 +54,24 @@ async function run() {
 
             try {
                 const result = await shopCodeCollection.updateOne(filter, shopCode, options);
+                res.send(result);
+            } catch (err) {
+                res.status(500).send({ error: 'Update failed', details: err });
+            }
+        });
+        app.put('/additional_request_approve/:uid', async (req, res) => {
+            const uid = req.params.uid;
+            const filter = { uid: uid };
+            const options = { upsert: true };
+            const updatedStatus = req.body;
+            const movementStatus = {
+                $set: {
+                    additional_movement_status: updatedStatus.additional_movement_status
+                }
+            };
+
+            try {
+                const result = await staffsCollection.updateOne(filter, movementStatus, options);
                 res.send(result);
             } catch (err) {
                 res.status(500).send({ error: 'Update failed', details: err });
@@ -142,6 +161,26 @@ async function run() {
                 res.status(500).send({ error: "Failed to insert user request" });
             }
         });
+        app.get('/additional_movement_request', async (req, res) => {
+            const result = await additionalMovementRequestCollection.find().toArray();
+            res.send(result);
+        })
+        app.post('/additional_movement_request', async (req, res) => {
+            const movementData = req.body;
+            try {
+                const result = await additionalMovementRequestCollection.insertOne(movementData);
+                res.send(result);
+            } catch (err) {
+                res.status(500).send({ error: "Failed to insert request" });
+            }
+        });
+        app.delete('/additional_movement_request/:uid', async (req, res) => {
+            const uid = req.params.uid;
+            const filter = { uid: uid};
+            const result = await additionalMovementRequestCollection.deleteOne(filter);
+            res.send(result);
+        });
+
 
         app.get('/user_request', async (req, res) => {
             const user = await userRequestCollection.find().toArray();
@@ -187,7 +226,8 @@ async function run() {
             if (updatedTime.name == 'today_enter1_time') {
                 attendance = {
                     $set: {
-                        today_enter1_time: updatedTime.clickedTime
+                        today_enter1_time: updatedTime.clickedTime,
+                        today_date: updatedTime.today_date
                     }
                 };
             }
@@ -209,6 +249,34 @@ async function run() {
                 attendance = {
                     $set: {
                         today_exit2_time: updatedTime.clickedTime
+                    }
+                };
+            }
+
+            try {
+                const result = await staffsCollection.updateOne(filter, attendance, options);
+                res.send(result);
+            } catch (err) {
+                res.status(500).send({ error: 'Update failed', details: err });
+            }
+        });
+        app.put('/additional_movements/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedTime = req.body;
+            let attendance
+            if (updatedTime.name == 'additional_enter_time') {
+                attendance = {
+                    $set: {
+                        additional_enter_time: updatedTime.clickedTime
+                    }
+                };
+            }
+            else if (updatedTime.name == 'additional_exit_time') {
+                attendance = {
+                    $set: {
+                        additional_exit_time: updatedTime.clickedTime
                     }
                 };
             }
@@ -394,7 +462,9 @@ async function run() {
                 today_exit2_time: bodyData.today_exit2_time,
                 total_hour: bodyData.total_hour,
                 total_minute: bodyData.total_minute,
-                total_earn: bodyData.total_earn
+                total_earn: bodyData.total_earn,
+                additional_movement_hour: bodyData.additional_movement_hour,
+                additional_movement_minute: bodyData.additional_movement_minute
 
             }
             const filter = { _id: new ObjectId(id) };
@@ -430,6 +500,41 @@ async function run() {
                     }
                 }
                 if (bodyData.today_exit1_time === '' || bodyData.today_exit2_time === '') {
+                    const result = await staffsCollection.updateOne(filter, ErrorDoc);
+                    res.send(result);
+                }
+                else {
+                    const result = await staffsCollection.updateOne(filter, updateDoc);
+                    res.send(result);
+                }
+            } catch (err) {
+                res.status(500).send({ error: 'Update failed', details: err.message });
+            }
+        });
+        app.put('/additional_movement_submit/:id', async (req, res) => {
+            const id = req.params.id;
+            const bodyData = req.body;
+            const filter = { _id: new ObjectId(id) };
+
+            try {
+                // Update database: Push daily data & reset today's values
+                const updateDoc = {
+                    $set: {
+                        additional_enter_time: '',
+                        additional_exit_time: '',
+                        additional_movement_hour: bodyData.additional_movement_hour,
+                        additional_movement_minute: bodyData.additional_movement_minute
+                    }
+                };
+                const ErrorDoc = {
+                    $set: {
+                        additional_enter_time: '',
+                        additional_exit_time: '',
+                        additional_movement_hour: 0,
+                        additional_movement_minute: 0
+                    }
+                }
+                if (bodyData.additional_enter_time === '') {
                     const result = await staffsCollection.updateOne(filter, ErrorDoc);
                     res.send(result);
                 }
