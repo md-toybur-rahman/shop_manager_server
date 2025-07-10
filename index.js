@@ -176,7 +176,7 @@ async function run() {
         });
         app.delete('/additional_movement_request/:uid', async (req, res) => {
             const uid = req.params.uid;
-            const filter = { uid: uid};
+            const filter = { uid: uid };
             const result = await additionalMovementRequestCollection.deleteOne(filter);
             res.send(result);
         });
@@ -542,6 +542,34 @@ async function run() {
                     const result = await staffsCollection.updateOne(filter, updateDoc);
                     res.send(result);
                 }
+            } catch (err) {
+                res.status(500).send({ error: 'Update failed', details: err.message });
+            }
+        });
+
+
+        app.put('/transection_details/:id', async (req, res) => {
+            const id = req.params.id;
+            const bodyData = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const newTransectionsData = {
+                transection_date: bodyData.currentDate,
+                transection_amount: bodyData.transection_amount,
+                transection_type: bodyData.transection_type,
+            }
+            try {
+                // Update database: Push transection data
+                const updateDoc = {
+                    $push: {
+                        transections: newTransectionsData
+                    },
+                    $set: {
+                        withdrawal_amount: bodyData.withdrawal_amount,
+                        available_balance: bodyData.available_balance
+                    }
+                };
+                const result = await staffsCollection.updateOne(filter, updateDoc);
+                res.send(result);
             } catch (err) {
                 res.status(500).send({ error: 'Update failed', details: err.message });
             }
