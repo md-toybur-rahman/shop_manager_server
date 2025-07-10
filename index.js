@@ -634,6 +634,25 @@ async function run() {
             }
         });
 
+        app.put('/set_user_category/:uid', async (req, res) => {
+            const uid = req.params.id;
+            const filter = { uid: uid };
+            const options = { upsert: true };
+            const updated = req.body;
+            const newUserCategory = {
+                $set: {
+                    user_category: updated.user_category
+                }
+            };
+
+            try {
+                const result = await staffsCollection.updateOne(filter, newUserCategory, options);
+                res.send(result);
+            } catch (err) {
+                res.status(500).send({ error: 'Update failed', details: err });
+            }
+        });
+
 
 
 
