@@ -562,6 +562,7 @@ async function run() {
             }
             try {
                 // Update database: Push transection data
+                console.log(staff.transections.length > 19)
                 if (staff.transections.length > 19) {
                     const updateDoc = {
                         $push: {
@@ -571,7 +572,7 @@ async function run() {
                             withdrawal_amount: bodyData.withdrawal_amount,
                             available_balance: bodyData.available_balance
                         },
-                        $pop: { transection: -1 }
+                        $pop: { transections: -1 }
                     }
                     const result = await staffsCollection.updateOne(filter, updateDoc);
                     res.send(result);
