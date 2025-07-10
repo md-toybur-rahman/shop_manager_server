@@ -635,7 +635,7 @@ async function run() {
         });
 
         app.put('/set_user_category/:uid', async (req, res) => {
-            const uid = req.params.id;
+            const uid = req.params.uid;
             const filter = { uid: uid };
             const options = { upsert: true };
             const updated = req.body;
@@ -653,7 +653,7 @@ async function run() {
             }
         });
         app.put('/set_user_status/:uid', async (req, res) => {
-            const uid = req.params.id;
+            const uid = req.params.uid;
             const filter = { uid: uid };
             const options = { upsert: true };
             const updated = req.body;
