@@ -552,26 +552,60 @@ async function run() {
             const id = req.params.id;
             const bodyData = req.body;
             const filter = { _id: new ObjectId(id) };
+            const staff = await staffsCollection.findOne(filter);
             const newTransectionsData = {
+                transection_id: bodyData.transection_id,
                 transection_date: bodyData.currentDate,
                 transection_amount: bodyData.transection_amount,
                 transection_type: bodyData.transection_type,
+                comment: bodyData.comment
             }
             try {
                 // Update database: Push transection data
-                const updateDoc = {
-                    $push: {
-                        transections: newTransectionsData
-                    },
-                    $set: {
-                        withdrawal_amount: bodyData.withdrawal_amount,
-                        available_balance: bodyData.available_balance
+                if (staff.transections.length > 19) {
+                    const updateDoc = {
+                        $push: {
+                            transections: newTransectionsData
+                        },
+                        $set: {
+                            withdrawal_amount: bodyData.withdrawal_amount,
+                            available_balance: bodyData.available_balance
+                        },
+                        $pop: { transection: -1 }
                     }
-                };
-                const result = await staffsCollection.updateOne(filter, updateDoc);
-                res.send(result);
+                    const result = await staffsCollection.updateOne(filter, updateDoc);
+                    res.send(result);
+                }
+                else {
+                    const updateDoc = {
+                        $push: {
+                            transections: newTransectionsData
+                        },
+                        $set: {
+                            withdrawal_amount: bodyData.withdrawal_amount,
+                            available_balance: bodyData.available_balance
+                        }
+                    };
+                    const result = await staffsCollection.updateOne(filter, updateDoc);
+                    res.send(result);
+                }
             } catch (err) {
                 res.status(500).send({ error: 'Update failed', details: err.message });
+            }
+        });
+        app.put("/api/delete_oldest_transection/:id", async (req, res) => {
+            const { id } = req.params;
+
+            try {
+                const result = await staffCollection.updateOne(
+                    { _id: new ObjectId(id) },
+                    { $pop: { transection: -1 } } // -1 => remove first item
+                );
+
+                res.json({ message: "Oldest transection deleted", result });
+            } catch (error) {
+                console.error("Server error:", error);
+                res.status(500).json({ message: "Internal server error" });
             }
         });
 
