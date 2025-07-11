@@ -34,6 +34,9 @@ async function run() {
         const userRequestCollection = client.db('Bismillah_Enterprise').collection('user_request');
         const shopCodeCollection = client.db('Bismillah_Enterprise').collection('shop_code');
         const additionalMovementRequestCollection = client.db('Bismillah_Enterprise').collection('additional_movement_request');
+        const shopTransectionsCollection = client.db('Bismillah_Enterprise').collection('shop_transections');
+        const shopTransectionsSummaryCollection = client.db('Bismillah_Enterprise').collection('shop_transections_summary');
+        const noticePanelCollection = client.db('Bismillah_Enterprise').collection('notice_panel');
 
         app.get("/shop_code/:id", async (req, res) => {
             const id = req.params.id;
@@ -669,6 +672,55 @@ async function run() {
             } catch (err) {
                 res.status(500).send({ error: 'Update failed', details: err });
             }
+        });
+        app.get('/shop_transections', async (req, res) => {
+            const result = await shopTransectionsCollection.find().toArray();
+            res.send(result);
+        });
+        app.put('/shop_transections/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const bodyData = req.body;
+            const transection = {
+                transection_id: bodyData.transection_id,
+                transection_date: bodyData.transection_date,
+                transection_amount: bodyData.transection_amount,
+                transection_explaination: bodyData.transection_explaination
+            }
+            if (bodyData.transection_type === 'revenue') {
+                const updateDoc = {
+                    $push: {
+                        revenue_transections: transection
+                    },
+                    $set: {
+                        total_revenue_amount: bodyData.total_revenue_amount,
+                        hand_on_cash: bodyData.hand_on_cash
+                    }
+                }
+                const result = await shopTransectionsCollection.updateOne(filter, updateDoc);
+                res.send(result);
+            }
+            else {
+                const updateDoc = {
+                    $push: {
+                        expense_transections: transection
+                    },
+                    $set: {
+                        total_expense_amount: bodyData.total_expense_amount,
+                        hand_on_cash: bodyData.hand_on_cash
+                    }
+                }
+                const result = await shopTransectionsCollection.updateOne(filter, updateDoc);
+                res.send(result);
+            }
+        })
+        app.get('/shop_transections_summary', async (req, res) => {
+            const result = await shopTransectionsSummaryCollection.find().toArray();
+            res.send(result);
+        });
+        app.get('/notice_panel', async (req, res) => {
+            const result = await noticePanelCollection.find().toArray();
+            res.send(result);
         });
 
 
